@@ -67,18 +67,36 @@ export function filterAndSortTransactions<T extends Record<string, any>>(
         const aValue = a[sortColumn];
         const bValue = b[sortColumn];
 
-        // טיפול במחרוזות/מספרים/תאריכים
-        if (typeof aValue === "string" && typeof bValue === "string") {
-            return sortDirection === "asc"
-                ? aValue.localeCompare(bValue)
-                : bValue.localeCompare(aValue);
+        // Normalization helpers
+        const toStr = (v: any) => (v === null || v === undefined ? "" : String(v));
+        const tryParseNumber = (v: any) => {
+            if (v === null || v === undefined) return NaN;
+            // strip currency symbols and whitespace
+            const cleaned = String(v).replace(/[^0-9+\-.,eE]/g, '').replace(/,/g, '.');
+            const n = parseFloat(cleaned);
+            return Number.isFinite(n) ? n : NaN;
+        };
+
+        // numbers first (including numeric-strings like '100' or '100.50' or '₪100')
+        const aNum = tryParseNumber(aValue);
+        const bNum = tryParseNumber(bValue);
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+            return sortDirection === "asc" ? aNum - bNum : bNum - aNum;
         }
-        if (typeof aValue === "number" && typeof bValue === "number") {
-            return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
+
+        // try dates (only if parse yields a valid timestamp)
+        const aTime = new Date(toStr(aValue)).getTime();
+        const bTime = new Date(toStr(bValue)).getTime();
+        if (!isNaN(aTime) && !isNaN(bTime)) {
+            return sortDirection === "asc" ? aTime - bTime : bTime - aTime;
         }
-        const aTime = new Date(aValue).getTime();
-        const bTime = new Date(bValue).getTime();
-        return sortDirection === "asc" ? aTime - bTime : bTime - aTime;
+
+        // fallback to locale-aware string comparison (numeric-sensitive)
+        const astr = toStr(aValue).trim();
+        const bstr = toStr(bValue).trim();
+        // Use Hebrew locale (if present) and numeric-aware compare to handle descriptions with numbers
+        const cmp = astr.localeCompare(bstr, "he-IL", { numeric: true, sensitivity: "base" });
+        return sortDirection === "asc" ? cmp : -cmp;
     });
 
     // אפשרות לעיבוד נוסף (למשל צבעים לפעולות)

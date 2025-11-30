@@ -37,14 +37,24 @@ export function useTransactionFilter(user: User) {
         return match || { label: "אחר", color: "info" };
     };
 
-    const handleSort = (column: SortColumn) => {
-        setSortDirection((prev) =>
-            column === sortColumn && prev === "desc" ? "asc" : "desc"
-        );
-        setSortColumn(column);
+    const handleSort = (column: SortColumn, nextDirection?: SortDirection) => {
+        if (nextDirection) {
+            setSortColumn(column);
+            setSortDirection(nextDirection);
+            return;
+        }
+
+        setSortColumn((prevColumn) => {
+            if (prevColumn !== column) {
+                setSortDirection("asc");
+                return column;
+            }
+
+            setSortDirection((prevDir) => (prevDir === "asc" ? "desc" : "asc"));
+            return prevColumn;
+        });
     };
 
-    // טעינה מהשרת
     useEffect(() => {
         const fetchHistory = async () => {
             setLoading(true);

@@ -4,7 +4,7 @@ interface SortableTableCellProps<T extends string = string> {
   columnKey: T;
   currentSortColumn: T;
   currentSortDirection: "asc" | "desc";
-  handleSort: (column: T) => void;
+  handleSort: (column: T, nextDirection?: "asc" | "desc") => void;
   label: string;
 }
 
@@ -19,11 +19,18 @@ const SortableTableCell = <T extends string>({
   return (
     <TableCell
       align="center"
-      onClick={() => handleSort(columnKey)}
+      onClick={() => {
+          const next = isActive ? (currentSortDirection === "asc" ? "desc" : "asc") : "asc";
+          handleSort(columnKey, next);
+        }}
       sortDirection={isActive ? currentSortDirection : false}
       sx={{ cursor: "pointer", "&:hover": { backgroundColor: "rgba(0,0,0,0.04)" } }}
     >
-      <TableSortLabel active={isActive} direction={isActive ? currentSortDirection : "desc"}>
+      <TableSortLabel
+        active={isActive}
+        direction={isActive ? currentSortDirection : "asc"}
+        hideSortIcon={!isActive}
+      >
         {label}
       </TableSortLabel>
     </TableCell>

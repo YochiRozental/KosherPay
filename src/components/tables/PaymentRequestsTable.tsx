@@ -30,6 +30,7 @@ export default function PaymentRequestsPage({
     onApprove,
     onReject,
 }: PaymentRequestsPageProps) {
+    
     const theme = useTheme();
     const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
 
@@ -185,7 +186,12 @@ export default function PaymentRequestsPage({
                 </Box>
             </Box>
 
-            <DataTable<RequestItem> columns={columns} rows={filteredRequests} />
+            <DataTable<RequestItem>
+                columns={columns}
+                rows={filteredRequests}
+                sortable
+                initialSort={{ column: 'date' as keyof RequestItem, direction: 'desc' }}
+            />
         </Box>
     );
 }

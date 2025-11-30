@@ -125,6 +125,8 @@ export default function AdminUsersPage({ user }: { user: User }) {
                 columns={columns}
                 rows={users}
                 emptyMessage="אין משתמשים להצגה"
+                sortable
+                initialSort={{ column: 'balance' as keyof UserRow, direction: 'desc' }}
             />
         </Box>
     );

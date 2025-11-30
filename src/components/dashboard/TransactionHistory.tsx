@@ -16,6 +16,9 @@ export default function TransactionHistory({ user }: { user: User }) {
     setCustomStartDate,
     setCustomEndDate,
     getActionType,
+    sortColumn,
+    sortDirection,
+    handleSort,
   } = useTransactionFilter(user);
 
   if (loading)
@@ -44,7 +47,13 @@ export default function TransactionHistory({ user }: { user: User }) {
           setCustomEndDate(end);
         }}
       />
-      <TransactionTable rows={sortedAndFiltered} getActionType={getActionType} />
+      <TransactionTable
+        rows={sortedAndFiltered}
+        getActionType={getActionType}
+        sortColumn={sortColumn}
+        sortDirection={sortDirection}
+        onSort={handleSort}
+      />
     </Box>
   );
 }

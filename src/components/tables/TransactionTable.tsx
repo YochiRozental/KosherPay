@@ -7,12 +7,18 @@ interface TransactionTableProps {
   rows: Transaction[];
   getActionType: (actionType: string) => { label: string; color: string };
   onRowClick?: (tx: Transaction) => void;
+  sortColumn?: keyof Transaction | null;
+  sortDirection?: "asc" | "desc" | null;
+  onSort?: (column: keyof Transaction, nextDirection: "asc" | "desc") => void;
 }
 
 export default function TransactionTable({
   rows,
   getActionType,
   onRowClick,
+  sortColumn,
+  sortDirection,
+  onSort,
 }: TransactionTableProps) {
 
   const columns = [
@@ -59,6 +65,10 @@ export default function TransactionTable({
     <DataTable
       columns={columns}
       rows={rows}
+      sortable
+      sortColumn={sortColumn}
+      sortDirection={sortDirection}
+      onSort={onSort}
       emptyMessage="אין תנועות להצגה"
       onRowClick={onRowClick}
     />
