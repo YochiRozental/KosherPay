@@ -3,4 +3,5 @@ export interface Transaction {
     amount: string;
     description: string;
     transaction_date: string;
+    counterparty?: string;
 }

@@ -1,14 +1,22 @@
 import React from "react";
 
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import { Box, ButtonBase, useTheme } from "@mui/material";
-import { Stack, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
+import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
+import {
+  Box,
+  Button,
+  ButtonBase,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
-import { motion } from "framer-motion";
 
-
-import { colors } from "../../theme/designTokens";
+import { colors, focusRing, radius, shadows } from "../../theme/designTokens";
 
 import type { DateFilter } from "../../types";
 
@@ -22,6 +30,27 @@ interface FilterBarProps {
   onCustomDateChange: (start: Dayjs | null, end: Dayjs | null) => void;
 }
 
+const pillSx = (active: boolean) => ({
+  borderRadius: "9999px",
+  px: 2.5,
+  minHeight: 40,
+  fontFamily: "inherit",
+  fontSize: 14,
+  fontWeight: active ? 700 : 500,
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 1,
+  color: active ? "#FFFFFF" : colors.primary,
+  bgcolor: active ? colors.primary : colors.surface,
+  border: `1.5px solid ${active ? colors.primary : "rgba(23, 60, 108, 0.28)"}`,
+  transition:
+    "background-color 200ms ease, color 200ms ease, border-color 200ms ease, box-shadow 200ms ease",
+  "&:hover": active
+    ? { bgcolor: colors.primaryHover, borderColor: colors.primaryHover }
+    : { bgcolor: colors.accentSoft, borderColor: colors.primary },
+  "&.Mui-focusVisible": { boxShadow: focusRing },
+});
+
 const FilterBar: React.FC<FilterBarProps> = ({
   filter,
   onFilterChange,
@@ -29,7 +58,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
   customEndDate,
   onCustomDateChange,
 }) => {
-  const theme = useTheme();
   const [isCustomDialogOpen, setIsCustomDialogOpen] = React.useState(false);
 
   const formatCustomDateRange = () => {
@@ -49,89 +77,75 @@ const FilterBar: React.FC<FilterBarProps> = ({
   return (
     <>
       <Box
+        component="section"
+        aria-label="סינון תקופת הצגה"
         sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: 2,
-          p: 2,
-          borderRadius: 4,
+          p: { xs: 2, sm: 2.5 },
           mb: 3,
-          background: colors.accentSoft,
-          boxShadow: "inset 0 0 10px rgba(0,0,0,0.05)",
+          bgcolor: colors.surface,
+          border: `1px solid ${colors.border}`,
+          borderRadius: radius.card,
+          boxShadow: shadows.sm,
         }}
       >
-        {[
-          { key: "all", label: "כל הזמנים" },
-          { key: "week", label: "שבוע אחרון" },
-          { key: "month", label: "חודש אחרון" },
-          { key: "three_months", label: "3 חודשים אחרונים" },
-        ].map(({ key, label }) => {
-          const isActive = filter === key;
-          const borderColor = isActive ? theme.palette.primary.main : theme.palette.divider;
-
-          return (
-            <ButtonBase
-              key={key}
-              onClick={() => onFilterChange(key as DateFilter)}
-              component={motion.div}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.97 }}
-              sx={{ borderRadius: "9999px", overflow: "hidden", transition: "0.3s" }}
-            >
-              <Box
-                sx={{
-                  px: 3,
-                  py: 1,
-                  borderRadius: "9999px",
-                  border: `1.5px solid ${borderColor}`,
-                  color: isActive ? "white" : theme.palette.primary.main,
-                  backgroundColor: isActive ? theme.palette.primary.main : "white",
-                  fontWeight: isActive ? "bold" : "normal",
-                  transition: "0.3s",
-                }}
-              >
-                {label}
-              </Box>
-            </ButtonBase>
-          );
-        })}
-
-        <ButtonBase
-          onClick={() => setIsCustomDialogOpen(true)}
-          component={motion.div}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.97 }}
-          sx={{
-            borderRadius: "9999px",
-            overflow: "hidden",
-            transition: "0.3s",
-          }}
-        >
-          <Box
+        <Stack direction="row" alignItems="center" sx={{ gap: 1, mb: 1.5 }}>
+          <FilterAltOutlinedIcon sx={{ fontSize: 18, color: colors.muted }} />
+          <Typography
             sx={{
-              px: 3,
-              py: 1,
-              borderRadius: "9999px",
-              border: `1.5px solid ${filter === "custom" ? theme.palette.secondary.main : theme.palette.divider
-                }`,
-              color: filter === "custom" ? "white" : theme.palette.secondary.main,
-              backgroundColor: filter === "custom" ? theme.palette.secondary.main : "white",
-              fontWeight: filter === "custom" ? "bold" : "normal",
-              transition: "0.3s",
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
+              fontSize: 12.5,
+              fontWeight: 700,
+              letterSpacing: "0.06em",
+              color: colors.textSecondary,
             }}
           >
-            <CalendarMonthIcon sx={{ fontSize: 18 }} />
+            תקופת הצגה
+          </Typography>
+        </Stack>
+
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.25 }}>
+          {[
+            { key: "all", label: "כל הזמנים" },
+            { key: "week", label: "שבוע אחרון" },
+            { key: "month", label: "חודש אחרון" },
+            { key: "three_months", label: "3 חודשים אחרונים" },
+          ].map(({ key, label }) => {
+            const isActive = filter === key;
+            return (
+              <ButtonBase
+                key={key}
+                onClick={() => onFilterChange(key as DateFilter)}
+                aria-pressed={isActive}
+                sx={pillSx(isActive)}
+              >
+                {label}
+              </ButtonBase>
+            );
+          })}
+
+          <ButtonBase
+            onClick={() => setIsCustomDialogOpen(true)}
+            aria-pressed={filter === "custom"}
+            sx={pillSx(filter === "custom")}
+          >
+            <CalendarMonthIcon
+              sx={{
+                fontSize: 18,
+                color: filter === "custom" ? colors.gold : "inherit",
+              }}
+            />
             {formatCustomDateRange()}
-          </Box>
-        </ButtonBase>
+          </ButtonBase>
+        </Box>
       </Box>
 
-      <Dialog open={isCustomDialogOpen} onClose={() => setIsCustomDialogOpen(false)} fullWidth>
-        <DialogTitle sx={{ textAlign: "right" }}>בחר טווח תאריכים</DialogTitle>
+      <Dialog
+        open={isCustomDialogOpen}
+        onClose={() => setIsCustomDialogOpen(false)}
+        fullWidth
+      >
+        <DialogTitle sx={{ textAlign: "right", fontWeight: 700 }}>
+          בחר טווח תאריכים
+        </DialogTitle>
         <DialogContent sx={{ direction: "rtl" }}>
           <Stack spacing={3} sx={{ mt: 1 }}>
             <DatePicker
@@ -148,13 +162,14 @@ const FilterBar: React.FC<FilterBarProps> = ({
           </Stack>
         </DialogContent>
         <DialogActions sx={{ justifyContent: "space-between", p: 3 }}>
-          <Button onClick={() => setIsCustomDialogOpen(false)} color="error" variant="outlined">
+          <Button onClick={() => setIsCustomDialogOpen(false)} variant="text" size="large">
             ביטול
           </Button>
           <Button
             onClick={handleApplyCustomFilter}
             color="primary"
             variant="contained"
+            size="large"
             disabled={!customStartDate || !customEndDate}
           >
             החל סינון

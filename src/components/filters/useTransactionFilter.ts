@@ -97,7 +97,20 @@ export function useTransactionFilter(user: UserMe) {
 
                         const description = String(t.description ?? t.details ?? t.note ?? "");
 
-                        return { action_type, amount, description, transaction_date };
+                        const counterparty = String(
+                            t.counterparty ??
+                            t.recipient_name ??
+                            t.recipient_phone ??
+                            t.recipient ??
+                            t.target_name ??
+                            t.target_phone ??
+                            t.sender_name ??
+                            t.sender_phone ??
+                            t.other_party ??
+                            ""
+                        );
+
+                        return { action_type, amount, description, transaction_date, counterparty };
                     });
 
                 const sorted = normalized.sort(

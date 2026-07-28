@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 
+import { InboxOutlined } from "@mui/icons-material";
 import {
   Table,
   TableHead,
@@ -9,9 +10,9 @@ import {
   Paper,
   Box,
   Typography,
-  useTheme,
 } from "@mui/material";
 
+import { colors, radius, shadows } from "../../theme/designTokens";
 import SortableTableCell from "../filters/SortableTableCell";
 
 // --- Types & Interfaces ---
@@ -65,8 +66,6 @@ export default function DataTable<T extends Record<string, any>>({
   onSort,
   initialSort,
 }: DataTableProps<T>) {
-  const theme = useTheme();
-
   // 1. Hooks (חייבים להיות תמיד בראש הפונקציה)
   const [internalSortColumn, setInternalSortColumn] = useState<keyof T | null>(
     initialSort?.column ?? null,
@@ -150,43 +149,53 @@ export default function DataTable<T extends Record<string, any>>({
   if (!rows.length) {
     return (
       <Box
-        p={3}
         sx={{
-          backgroundColor: theme.palette.background.paper,
-          borderRadius: 2,
+          py: 6,
+          px: 3,
+          textAlign: "center",
+          backgroundColor: colors.surface,
+          borderRadius: radius.card,
+          border: "1px dashed rgba(23, 60, 108, 0.35)",
         }}
       >
-        <Typography textAlign="center" color="text.secondary">
+        <InboxOutlined sx={{ fontSize: 44, color: colors.muted, mb: 1 }} />
+        <Typography sx={{ fontSize: 16, fontWeight: 700, color: colors.textPrimary }}>
           {emptyMessage}
+        </Typography>
+        <Typography sx={{ fontSize: 13.5, color: colors.textSecondary, mt: 0.5 }}>
+          נתונים חדשים יופיעו כאן ברגע שיהיו זמינים
         </Typography>
       </Box>
     );
   }
 
   const Wrapper = Paper as React.ElementType;
-  const headerBackgroundColor = theme.palette.primary.light;
 
   return (
     <Wrapper
+      elevation={0}
       sx={{
         overflow: "hidden",
         direction: "rtl",
-        borderRadius: 2,
-        boxShadow: theme.shadows[3],
-        border: `1px solid ${theme.palette.grey[200]}`,
-        backgroundColor: theme.palette.background.paper,
+        borderRadius: radius.card,
+        boxShadow: shadows.md,
+        border: `1px solid ${colors.border}`,
+        backgroundColor: colors.surface,
       }}
     >
+      <Box sx={{ overflowX: "auto" }}>
       <Table stickyHeader>
         <TableHead>
           <TableRow
             sx={{
-              backgroundColor: headerBackgroundColor,
               "& th": {
-                color: theme.palette.primary.dark,
-                fontWeight: "bold",
-                fontSize: "0.875rem",
-                border: "none",
+                backgroundColor: "#F0F4F9",
+                color: colors.primary,
+                fontWeight: 700,
+                fontSize: 13,
+                letterSpacing: "0.02em",
+                py: 1.75,
+                borderBottom: "1px solid rgba(23, 60, 108, 0.14)",
               },
             }}
           >
@@ -228,18 +237,16 @@ export default function DataTable<T extends Record<string, any>>({
             <TableRow
               key={i}
               sx={{
-                height: 56,
-                "& td, & th": {
-                  height: 56,
-                  py: 1,
-                  borderBottom: `1px solid ${theme.palette.grey[200]}`,
-                  border: "none",
+                transition: "background-color 150ms ease",
+                "& td": {
+                  py: 1.75,
+                  fontSize: 14.5,
+                  color: colors.textPrimary,
+                  borderBottom: "1px solid rgba(23, 60, 108, 0.10)",
                 },
-                "&:nth-of-type(odd)": {
-                  backgroundColor: theme.palette.action.hover,
-                },
+                "&:last-of-type td": { borderBottom: "none" },
                 "&:hover": {
-                  backgroundColor: theme.palette.action.selected,
+                  backgroundColor: colors.accentSoft,
                   cursor: onRowClick ? "pointer" : "default",
                 },
               }}
@@ -274,6 +281,7 @@ export default function DataTable<T extends Record<string, any>>({
           ))}
         </TableBody>
       </Table>
+      </Box>
     </Wrapper>
   );
 }

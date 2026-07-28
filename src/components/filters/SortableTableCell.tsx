@@ -1,5 +1,7 @@
 import { TableCell, TableSortLabel } from "@mui/material";
 
+import { colors } from "../../theme/designTokens";
+
 type Align = "left" | "center" | "right";
 
 interface SortableTableCellProps<T extends string = string> {
@@ -35,7 +37,16 @@ const SortableTableCell = <T extends string>({
       sortDirection={isActive ? currentSortDirection : false}
       sx={{
         cursor: "pointer",
-        "&:hover": { backgroundColor: "rgba(0,0,0,0.04)" },
+        transition: "background-color 150ms ease",
+        "&:hover": { backgroundColor: "rgba(23, 60, 108, 0.06)" },
+        "& .MuiTableSortLabel-root": {
+          color: "inherit",
+          "&:hover": { color: colors.primaryHover },
+          "&.Mui-active": { color: colors.primary },
+        },
+        "& .MuiTableSortLabel-icon": {
+          color: `${colors.gold} !important`,
+        },
       }}
     >
       <TableSortLabel
