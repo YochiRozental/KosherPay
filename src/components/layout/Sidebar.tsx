@@ -1,8 +1,7 @@
-import React, { type JSX } from "react";
-import { useState } from "react";
+import { useState, type JSX } from "react";
 
 import {
-    Menu,
+    Menu as MenuIcon,
     AccountBalanceWallet,
     History,
     Payment,
@@ -14,184 +13,323 @@ import {
     PersonOutline,
 } from "@mui/icons-material";
 import {
+    Box,
+    Divider,
     Drawer,
+    IconButton,
     List,
     ListItemButton,
-    ListItemText,
     ListItemIcon,
-    Box,
+    ListItemText,
     Typography,
-    Divider,
-    IconButton,
-    useTheme,
     useMediaQuery,
+    useTheme,
 } from "@mui/material";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { Link as RouterLink } from "react-router-dom";
+import { useLocation, useNavigate, Link as RouterLink } from "react-router-dom";
+
+import {
+    colors,
+    focusRing,
+    radius,
+    shadows,
+} from "../../theme/designTokens";
 
 const DRAWER_WIDTH = 280;
+const DRAWER_WIDTH_TABLET = 264;
+
+const drawerWidth = { xs: DRAWER_WIDTH, md: DRAWER_WIDTH_TABLET, lg: DRAWER_WIDTH };
+
+const softDivider = "rgba(23, 60, 108, 0.14)";
 
 type NavItem = {
     key: string;
     label: string;
     icon: JSX.Element;
     path: string;
-    isHeader?: false;
 };
 
-type HeaderItem = {
+type NavSection = {
     key: string;
-    label: React.ReactNode;
-    isHeader: true;
+    title: string;
+    divider?: boolean;
+    items: NavItem[];
 };
 
-type MenuEntry = NavItem | HeaderItem;
+const navItemSx = (active: boolean) => ({
+    position: "relative",
+    borderRadius: radius.button,
+    mb: 0.5,
+    px: 1.75,
+    minHeight: 48,
+    color: active ? colors.primary : colors.textSecondary,
+    bgcolor: active ? colors.accentSoft : "transparent",
+    transition: "background-color 200ms ease, color 200ms ease, box-shadow 200ms ease",
+    "& .MuiListItemIcon-root": {
+        minWidth: 40,
+        color: active ? colors.primary : colors.muted,
+        transition: "color 200ms ease",
+    },
+    "& .MuiListItemText-primary": {
+        fontSize: 14.5,
+        fontWeight: active ? 700 : 500,
+    },
+    "&::before": {
+        content: '""',
+        position: "absolute",
+        insetInlineStart: 0,
+        top: "50%",
+        width: "3.5px",
+        height: 22,
+        borderRadius: "8px",
+        bgcolor: colors.gold,
+        transform: active ? "translateY(-50%) scaleY(1)" : "translateY(-50%) scaleY(0)",
+        transition: "transform 200ms ease",
+    },
+    "&:hover": {
+        bgcolor: colors.accentSoft,
+        color: colors.primary,
+        "& .MuiListItemIcon-root": { color: colors.primary },
+    },
+    "&.Mui-focusVisible": {
+        boxShadow: focusRing,
+        bgcolor: colors.accentSoft,
+    },
+});
 
 export default function Sidebar({ onLogout }: { onLogout: () => void }) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
     const [mobileOpen, setMobileOpen] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
 
     const user = useSelector((state: any) => state.auth?.user);
 
     const isAdmin = user?.phone === "0556749022";
 
-    const baseMenu: MenuEntry[] = [
+    const sections: NavSection[] = [
         {
-            key: "profile",
-            label: "פרופיל",
-            icon: <PersonOutline />,
-            path: "/profile",
+            key: "account",
+            title: "החשבון שלי",
+            items: [
+                {
+                    key: "profile",
+                    label: "פרופיל",
+                    icon: <PersonOutline />,
+                    path: "/profile",
+                },
+                {
+                    key: "actions",
+                    label: "פעולות בחשבון",
+                    icon: <SettingsSuggest />,
+                    path: "/account-actions",
+                },
+                {
+                    key: "balance",
+                    label: "יתרה נוכחית",
+                    icon: <AccountBalanceWallet />,
+                    path: "/balance",
+                },
+            ],
         },
         {
-            key: "actions",
-            label: "פעולות בחשבון",
-            icon: <SettingsSuggest />,
-            path: "/account-actions",
-        },
-        {
-            key: "balance",
-            label: "יתרה נוכחית",
-            icon: <AccountBalanceWallet />,
-            path: "/balance",
-        },
-        {
-            key: "history",
-            label: "היסטוריית פעולות",
-            icon: <History />,
-            path: "/history",
-        },
-        {
-            key: "requests",
-            label: "בקשות תשלום שקיבלתי",
-            icon: <Payment />,
-            path: "/requests",
-        },
-        {
-            key: "sentRequests",
-            label: "בקשות ששלחתי",
-            icon: <Send />,
-            path: "/sent-requests",
+            key: "payments",
+            title: "תשלומים ופעילות",
+            items: [
+                {
+                    key: "history",
+                    label: "היסטוריית פעולות",
+                    icon: <History />,
+                    path: "/history",
+                },
+                {
+                    key: "requests",
+                    label: "בקשות תשלום שקיבלתי",
+                    icon: <Payment />,
+                    path: "/requests",
+                },
+                {
+                    key: "sentRequests",
+                    label: "בקשות ששלחתי",
+                    icon: <Send />,
+                    path: "/sent-requests",
+                },
+            ],
         },
     ];
 
     if (isAdmin) {
-        baseMenu.push(
-            {
-                key: "adminHeader",
-                isHeader: true,
-                label: (
-                    <Box sx={{ mt: 2, mb: 1 }}>
-                        <Divider sx={{ mb: 1 }} />
-                        <Typography
-                            variant="subtitle2"
-                            sx={{
-                                px: 1,
-                                fontWeight: 700,
-                                color: "text.secondary",
-                                textAlign: "right",
-                            }}
-                        >
-                            אזור ניהול
-                        </Typography>
-                    </Box>
-                ),
-            } as HeaderItem,
-            {
-                key: "adminDashboard",
-                label: "ניהול משתמשים",
-                icon: <AdminPanelSettings />,
-                path: "/admin/users",
-            } as NavItem,
-            {
-                key: "systemLogs",
-                label: "יומן מערכת",
-                icon: <People />,
-                path: "/admin/logs",
-            } as NavItem
-        );
+        sections.push({
+            key: "admin",
+            title: "אזור ניהול",
+            divider: true,
+            items: [
+                {
+                    key: "adminDashboard",
+                    label: "ניהול משתמשים",
+                    icon: <AdminPanelSettings />,
+                    path: "/admin/users",
+                },
+                {
+                    key: "systemLogs",
+                    label: "יומן מערכת",
+                    icon: <People />,
+                    path: "/admin/logs",
+                },
+            ],
+        });
     }
 
     const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
+
+    const handleNavigate = (path: string) => {
+        navigate(path);
+        if (isMobile) setMobileOpen(false);
+    };
 
     const drawerContent = (
         <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
             <Box
                 component={RouterLink}
                 to="/"
+                aria-label="Kosher Pay — דף הבית"
                 sx={{
                     textDecoration: "none",
-                    color: "inherit",
                     display: "block",
+                    outline: "none",
+                    "&:focus-visible .brand-header": { boxShadow: focusRing },
                 }}
             >
-                <Box textAlign="center" pt={4} pb={2}>
-                    <Typography variant="h5" color={theme.palette.primary.main} fontWeight={700}>
-                        Koaher Pay
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                        ניהול חשבון
-                    </Typography>
-                    <Divider sx={{ mt: 2, mx: 3 }} />
+                <Box
+                    className="brand-header"
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.5,
+                        mx: 2,
+                        mt: 2.5,
+                        mb: 1,
+                        px: 1.5,
+                        py: 1.5,
+                        borderRadius: radius.button,
+                        transition: "background-color 200ms ease, box-shadow 200ms ease",
+                        "&:hover": { bgcolor: colors.accentSoft },
+                    }}
+                >
+                    <Box
+                        sx={{
+                            width: 48,
+                            height: 48,
+                            flexShrink: 0,
+                            position: "relative",
+                            overflow: "hidden",
+                            borderRadius: "14px",
+                            border: `1px solid ${colors.border}`,
+                            bgcolor: "#FFFFFF",
+                            boxShadow: shadows.sm,
+                        }}
+                    >
+                        <Box
+                            component="img"
+                            src="/logo.jpg"
+                            alt=""
+                            sx={{
+                                position: "absolute",
+                                width: 200,
+                                maxWidth: "none",
+                                left: -77,
+                                top: -18,
+                            }}
+                        />
+                    </Box>
+                    <Box sx={{ minWidth: 0 }}>
+                        <Typography
+                            sx={{
+                                fontSize: 19,
+                                fontWeight: 800,
+                                lineHeight: 1.2,
+                                color: colors.primary,
+                                letterSpacing: "0.01em",
+                            }}
+                        >
+                            Kosher Pay
+                        </Typography>
+                        <Typography sx={{ fontSize: 11.5, color: colors.textSecondary }}>
+                            ניהול פיננסי מאובטח
+                        </Typography>
+                    </Box>
                 </Box>
             </Box>
 
-            <List sx={{ direction: "rtl", flexGrow: 1, px: 2, py: 1 }}>
-                {baseMenu.map((item) =>
-                    (item as HeaderItem).isHeader ? (
-                        <Box key={item.key}>{(item as HeaderItem).label}</Box>
-                    ) : (
-                        <ListItemButton
-                            key={item.key}
-                            onClick={() => {
-                                navigate((item as NavItem).path);
-                                if (isMobile) setMobileOpen(false);
-                            }}
-                            sx={{
-                                mb: 1,
-                                borderRadius: 2,
-                                ...(location.pathname === (item as NavItem).path && {
-                                    bgcolor: theme.palette.action.selected,
-                                    "& .MuiListItemIcon-root": { color: theme.palette.primary.main },
-                                    fontWeight: "bold",
-                                }),
-                            }}
-                        >
-                            <ListItemIcon sx={{ minWidth: 40 }}>{(item as NavItem).icon}</ListItemIcon>
-                            <ListItemText primary={(item as NavItem).label} />
-                        </ListItemButton>
-                    )
-                )}
-            </List>
+            <Divider sx={{ mx: 3, borderColor: softDivider }} />
 
-            <Box sx={{ p: 2 }}>
+            <Box
+                component="nav"
+                aria-label="ניווט ראשי"
+                sx={{ flexGrow: 1, overflowY: "auto", px: 2, py: 1 }}
+            >
+                <List disablePadding sx={{ direction: "rtl" }}>
+                    {sections.map((section) => (
+                        <Box key={section.key}>
+                            {section.divider && (
+                                <Divider sx={{ mt: 2, mb: 0.5, borderColor: softDivider }} />
+                            )}
+                            <Typography
+                                sx={{
+                                    px: 1.75,
+                                    pt: 2,
+                                    pb: 0.75,
+                                    fontSize: 11,
+                                    fontWeight: 700,
+                                    letterSpacing: "0.08em",
+                                    color: colors.muted,
+                                }}
+                            >
+                                {section.title}
+                            </Typography>
+                            {section.items.map((item) => {
+                                const active = location.pathname === item.path;
+                                return (
+                                    <ListItemButton
+                                        key={item.key}
+                                        onClick={() => handleNavigate(item.path)}
+                                        aria-current={active ? "page" : undefined}
+                                        sx={navItemSx(active)}
+                                    >
+                                        <ListItemIcon>{item.icon}</ListItemIcon>
+                                        <ListItemText primary={item.label} />
+                                    </ListItemButton>
+                                );
+                            })}
+                        </Box>
+                    ))}
+                </List>
+            </Box>
+
+            <Box sx={{ p: 2, pt: 1 }}>
                 <ListItemButton
                     onClick={onLogout}
-                    sx={{ borderRadius: 2, bgcolor: "#fff1f1", color: theme.palette.error.main }}
+                    sx={{
+                        borderRadius: radius.button,
+                        px: 1.75,
+                        minHeight: 46,
+                        color: colors.dangerText,
+                        border: "1px solid rgba(220, 38, 38, 0.25)",
+                        transition:
+                            "background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease",
+                        "& .MuiListItemIcon-root": { minWidth: 40, color: "inherit" },
+                        "& .MuiListItemText-primary": { fontSize: 14.5, fontWeight: 600 },
+                        "&:hover": {
+                            bgcolor: "rgba(220, 38, 38, 0.06)",
+                            borderColor: colors.danger,
+                        },
+                        "&.Mui-focusVisible": {
+                            boxShadow: "0 0 0 4px rgba(220, 38, 38, 0.16)",
+                        },
+                    }}
                 >
-                    <ListItemIcon sx={{ minWidth: 40 }}>
+                    <ListItemIcon>
                         <Logout />
                     </ListItemIcon>
                     <ListItemText primary="התנתקות" />
@@ -204,13 +342,27 @@ export default function Sidebar({ onLogout }: { onLogout: () => void }) {
         <>
             {isMobile && (
                 <IconButton
-                    color="inherit"
-                    aria-label="open drawer"
+                    aria-label="פתיחת תפריט ניווט"
                     edge="start"
                     onClick={handleDrawerToggle}
-                    sx={{ position: "fixed", top: 16, left: 16, zIndex: theme.zIndex.drawer + 1 }}
+                    sx={{
+                        position: "fixed",
+                        top: 14,
+                        left: 14,
+                        zIndex: theme.zIndex.drawer + 1,
+                        width: 44,
+                        height: 44,
+                        borderRadius: radius.button,
+                        color: colors.primary,
+                        bgcolor: colors.surface,
+                        border: `1px solid ${colors.border}`,
+                        boxShadow: shadows.md,
+                        transition: "background-color 200ms ease, box-shadow 200ms ease",
+                        "&:hover": { bgcolor: colors.accentSoft },
+                        "&.Mui-focusVisible": { boxShadow: focusRing },
+                    }}
                 >
-                    <Menu />
+                    <MenuIcon />
                 </IconButton>
             )}
 
@@ -219,17 +371,26 @@ export default function Sidebar({ onLogout }: { onLogout: () => void }) {
                 open={isMobile ? mobileOpen : true}
                 onClose={handleDrawerToggle}
                 anchor="right"
+                ModalProps={{ keepMounted: true }}
                 sx={{
-                    width: DRAWER_WIDTH,
+                    width: drawerWidth,
                     flexShrink: 0,
                     [`& .MuiDrawer-paper`]: {
-                        width: DRAWER_WIDTH,
+                        width: drawerWidth,
                         boxSizing: "border-box",
-                        background:
-                            theme.palette.mode === "light" ? "#f9f9f9" : theme.palette.background.default,
-                        boxShadow: theme.shadows[8],
-                        borderLeft: `1px solid ${theme.palette.divider}`,
+                        bgcolor: colors.surface,
                         borderRight: "none",
+                        ...(isMobile
+                            ? {
+                                  borderLeft: "none",
+                                  borderTopLeftRadius: radius.card,
+                                  borderBottomLeftRadius: radius.card,
+                                  boxShadow: shadows.lg,
+                              }
+                            : {
+                                  borderLeft: `1px solid ${colors.border}`,
+                                  boxShadow: shadows.md,
+                              }),
                     },
                 }}
             >
