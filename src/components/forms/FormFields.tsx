@@ -1,19 +1,32 @@
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import CreditCardIcon from "@mui/icons-material/CreditCard";
-import DeleteIcon from "@mui/icons-material/Delete";
-import LockIcon from "@mui/icons-material/Lock";
-import PersonIcon from "@mui/icons-material/Person";
-import PhoneIcon from "@mui/icons-material/Phone";
-import VpnKeyIcon from "@mui/icons-material/VpnKey";
+import { useState } from "react";
+
+import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlined";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
+import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import NumbersOutlinedIcon from "@mui/icons-material/NumbersOutlined";
+import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
+import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import {
   TextField,
   Stack,
-  Divider,
   Typography,
   InputAdornment,
   Button,
   IconButton,
+  Box,
 } from "@mui/material";
+
+import {
+  colors,
+  radius,
+  textFieldSx,
+  ghostButtonSx,
+} from "../../theme/designTokens";
 
 interface Props {
   data: Record<string, any> | null;
@@ -29,6 +42,59 @@ interface Props {
 
   readOnly?: boolean;
   showBankFields?: boolean;
+  compact?: boolean;
+}
+
+const fieldIconSx = { fontSize: 20, color: colors.primary };
+
+function SectionHeader({
+  icon,
+  title,
+  caption,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  caption?: string;
+}) {
+  return (
+    <Stack direction="row" spacing={1.5} alignItems="center" sx={{ pt: 1 }}>
+      <Box
+        sx={{
+          width: 40,
+          height: 40,
+          borderRadius: radius.input,
+          bgcolor: colors.accentSoft,
+          color: colors.accent,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        {icon}
+      </Box>
+      <Box>
+        <Typography
+          component="h3"
+          sx={{
+            fontSize: 16,
+            fontWeight: 600,
+            color: colors.textPrimary,
+            lineHeight: 1.4,
+          }}
+        >
+          {title}
+        </Typography>
+        {caption && (
+          <Typography
+            sx={{ fontSize: 13, color: colors.textSecondary, lineHeight: 1.5 }}
+          >
+            {caption}
+          </Typography>
+        )}
+      </Box>
+    </Stack>
+  );
 }
 
 export default function FormFields({
@@ -44,7 +110,10 @@ export default function FormFields({
   readOnly = false,
   showBankFields = false,
   showForgotSecret = false,
+  compact = false,
 }: Props) {
+  const [showSecret, setShowSecret] = useState(false);
+
   const bank = data?.bankAccount ?? {
     bankNumber: "",
     branchNumber: "",
@@ -67,6 +136,7 @@ export default function FormFields({
     disabled: readOnly,
     error: !!errors?.[name],
     helperText: errors?.[name] || "",
+    sx: textFieldSx,
     inputProps: {
       autoComplete: autoComplete || "off",
     },
@@ -88,20 +158,69 @@ export default function FormFields({
 
   return (
     <Stack spacing={2.5}>
-      <Typography variant="h6">פרטים אישיים</Typography>
-      <Divider />
+      {!compact && (
+        <SectionHeader
+          icon={<PersonOutlinedIcon fontSize="small" />}
+          title="פרטים אישיים"
+          caption="פרטי הזיהוי וההתקשרות שלך"
+        />
+      )}
 
-      <TextField {...baseProps("name", "שם מלא", <PersonIcon />)} />
       <TextField
-        {...baseProps("phone", "טלפון", <PhoneIcon />, {}, "tel-national")}
+        {...baseProps("name", "שם מלא", <PersonOutlinedIcon sx={fieldIconSx} />)}
+      />
+      <TextField
+        {...baseProps(
+          "phone",
+          "טלפון",
+          <LocalPhoneOutlinedIcon sx={fieldIconSx} />,
+          {},
+          "tel-national",
+        )}
       />
       <Stack spacing={0.5}>
         <TextField
           {...baseProps(
             "secret",
             "קוד סודי",
-            <LockIcon />,
-            { type: "password" },
+            <LockOutlinedIcon sx={fieldIconSx} />,
+            {
+              type: showSecret ? "text" : "password",
+              sx: [
+                textFieldSx,
+                {
+                  "& .MuiOutlinedInput-root.MuiInputBase-adornedEnd": {
+                    paddingRight: 0,
+                  },
+                },
+              ],
+              InputProps: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockOutlinedIcon sx={fieldIconSx} />
+                  </InputAdornment>
+                ),
+                endAdornment: !readOnly ? (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={showSecret ? "הסתר קוד סודי" : "הצג קוד סודי"}
+                      onClick={() => setShowSecret((s) => !s)}
+                      onMouseDown={(e) => e.preventDefault()}
+                      edge="end"
+                      size="small"
+                      sx={{ color: colors.primary }}
+                    >
+                      {showSecret ? (
+                        <VisibilityOffOutlinedIcon sx={{ fontSize: 20 }} />
+                      ) : (
+                        <VisibilityOutlinedIcon sx={{ fontSize: 20 }} />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ) : undefined,
+                readOnly,
+              },
+            },
             "current-password",
           )}
         />
@@ -112,7 +231,15 @@ export default function FormFields({
             variant="text"
             size="small"
             onClick={onForgotSecretClick}
-            sx={{ alignSelf: "flex-start" }}
+            sx={{
+              alignSelf: "flex-start",
+              textTransform: "none",
+              fontSize: 14,
+              fontWeight: 500,
+              color: colors.accent,
+              px: 0.5,
+              "&:hover": { bgcolor: "transparent", textDecoration: "underline" },
+            }}
           >
             שכחתי קוד
           </Button>
@@ -120,13 +247,16 @@ export default function FormFields({
       </Stack>
       {shouldShowAdditionalPhones && (
         <>
-          <Typography variant="h6" mt={3}>
-            טלפונים נוספים
-          </Typography>
-          <Divider />
+          <SectionHeader
+            icon={<LocalPhoneOutlinedIcon fontSize="small" />}
+            title="טלפונים נוספים"
+            caption="מספרים נוספים המשויכים לחשבון"
+          />
 
           {errors?.additionalPhones && (
-            <Typography color="error">{errors.additionalPhones}</Typography>
+            <Typography sx={{ color: colors.dangerText, fontSize: 14 }}>
+              {errors.additionalPhones}
+            </Typography>
           )}
 
           {visibleAdditionalPhones.map((phone: string, index: number) => (
@@ -146,10 +276,11 @@ export default function FormFields({
                 error={!!errors?.[`additionalPhones.${index}`]}
                 helperText={errors?.[`additionalPhones.${index}`] || ""}
                 fullWidth
+                sx={textFieldSx}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <PhoneIcon />
+                      <LocalPhoneOutlinedIcon sx={fieldIconSx} />
                     </InputAdornment>
                   ),
                   readOnly,
@@ -158,17 +289,40 @@ export default function FormFields({
 
               {!readOnly && (
                 <IconButton
-                  color="error"
+                  aria-label={`הסר טלפון נוסף ${index + 1}`}
                   onClick={() => onRemoveAdditionalPhone?.(index)}
+                  sx={{
+                    mt: 1,
+                    color: colors.primary,
+                    transition: "color 200ms ease, background-color 200ms ease",
+                    "&:hover": {
+                      color: colors.dangerText,
+                      bgcolor: "rgba(239, 68, 68, 0.12)",
+                    },
+                  }}
                 >
-                  <DeleteIcon />
+                  <DeleteOutlineIcon />
                 </IconButton>
               )}
             </Stack>
           ))}
 
           {!readOnly && showBankFields && (
-            <Button variant="outlined" onClick={onAddAdditionalPhone}>
+            <Button
+              onClick={onAddAdditionalPhone}
+              startIcon={<AddRoundedIcon />}
+              sx={{
+                ...ghostButtonSx,
+                minHeight: 44,
+                alignSelf: "flex-start",
+                border: `1px dashed ${colors.border}`,
+                color: colors.primary,
+                "&:hover": {
+                  bgcolor: colors.accentSoft,
+                  borderColor: colors.primaryHover,
+                },
+              }}
+            >
               הוסף טלפון נוסף
             </Button>
           )}
@@ -176,10 +330,11 @@ export default function FormFields({
       )}
       {showBankFields && (
         <>
-          <Typography variant="h6" mt={3}>
-            פרטי חשבון בנק
-          </Typography>
-          <Divider />
+          <SectionHeader
+            icon={<AccountBalanceOutlinedIcon fontSize="small" />}
+            title="פרטי חשבון בנק"
+            caption="חשבון הבנק המקושר לפעילות בחשבונך"
+          />
 
           <Stack
             direction="row"
@@ -197,11 +352,12 @@ export default function FormFields({
               error={!!errors?.bankNumber}
               helperText={errors?.bankNumber}
               fullWidth
+              sx={textFieldSx}
               inputProps={{ autoComplete: "off" }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <VpnKeyIcon />
+                    <AccountBalanceOutlinedIcon sx={fieldIconSx} />
                   </InputAdornment>
                 ),
                 readOnly,
@@ -216,11 +372,12 @@ export default function FormFields({
               error={!!errors?.branchNumber}
               helperText={errors?.branchNumber}
               fullWidth
+              sx={textFieldSx}
               inputProps={{ autoComplete: "off" }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <VpnKeyIcon />
+                    <NumbersOutlinedIcon sx={fieldIconSx} />
                   </InputAdornment>
                 ),
                 readOnly,
@@ -236,11 +393,12 @@ export default function FormFields({
             error={!!errors?.accountNumber}
             helperText={errors?.accountNumber}
             fullWidth
+            sx={textFieldSx}
             inputProps={{ autoComplete: "off" }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <CreditCardIcon />
+                  <CreditCardOutlinedIcon sx={fieldIconSx} />
                 </InputAdornment>
               ),
               readOnly,
@@ -255,11 +413,12 @@ export default function FormFields({
             error={!!errors?.accountHolder}
             helperText={errors?.accountHolder}
             fullWidth
+            sx={textFieldSx}
             inputProps={{ autoComplete: "off" }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <AccountBalanceIcon />
+                  <BadgeOutlinedIcon sx={fieldIconSx} />
                 </InputAdornment>
               ),
               readOnly,
