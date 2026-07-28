@@ -132,7 +132,7 @@ export default function ForgotSecretPage() {
       display="flex"
       justifyContent="center"
       py={6}
-      sx={{ bgcolor: "#f5f7fa", direction: "rtl" }}
+      sx={{ bgcolor: "background.default", direction: "rtl" }}
     >
       <Paper sx={{ p: 5, width: "100%", maxWidth: 500, borderRadius: 3 }}>
         <Typography variant="h4" textAlign="center" mb={3}>

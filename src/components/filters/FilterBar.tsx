@@ -8,6 +8,8 @@ import { Dayjs } from "dayjs";
 import { motion } from "framer-motion";
 
 
+import { colors } from "../../theme/designTokens";
+
 import type { DateFilter } from "../../types";
 
 export type { DateFilter };
@@ -55,7 +57,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
           p: 2,
           borderRadius: 4,
           mb: 3,
-          background: "linear-gradient(90deg, #f5f7fa 0%, #e3f2fd 100%)",
+          background: colors.accentSoft,
           boxShadow: "inset 0 0 10px rgba(0,0,0,0.05)",
         }}
       >

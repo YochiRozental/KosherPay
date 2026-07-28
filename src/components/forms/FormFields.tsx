@@ -21,12 +21,7 @@ import {
   Box,
 } from "@mui/material";
 
-import {
-  colors,
-  radius,
-  textFieldSx,
-  ghostButtonSx,
-} from "../../theme/designTokens";
+import { colors, radius } from "../../theme/designTokens";
 
 interface Props {
   data: Record<string, any> | null;
@@ -136,7 +131,6 @@ export default function FormFields({
     disabled: readOnly,
     error: !!errors?.[name],
     helperText: errors?.[name] || "",
-    sx: textFieldSx,
     inputProps: {
       autoComplete: autoComplete || "off",
     },
@@ -186,14 +180,11 @@ export default function FormFields({
             <LockOutlinedIcon sx={fieldIconSx} />,
             {
               type: showSecret ? "text" : "password",
-              sx: [
-                textFieldSx,
-                {
-                  "& .MuiOutlinedInput-root.MuiInputBase-adornedEnd": {
-                    paddingRight: 0,
-                  },
+              sx: {
+                "& .MuiOutlinedInput-root.MuiInputBase-adornedEnd": {
+                  paddingRight: 0,
                 },
-              ],
+              },
               InputProps: {
                 startAdornment: (
                   <InputAdornment position="start">
@@ -276,7 +267,6 @@ export default function FormFields({
                 error={!!errors?.[`additionalPhones.${index}`]}
                 helperText={errors?.[`additionalPhones.${index}`] || ""}
                 fullWidth
-                sx={textFieldSx}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -312,8 +302,8 @@ export default function FormFields({
               onClick={onAddAdditionalPhone}
               startIcon={<AddRoundedIcon />}
               sx={{
-                ...ghostButtonSx,
                 minHeight: 44,
+                px: 2,
                 alignSelf: "flex-start",
                 border: `1px dashed ${colors.border}`,
                 color: colors.primary,
@@ -352,7 +342,6 @@ export default function FormFields({
               error={!!errors?.bankNumber}
               helperText={errors?.bankNumber}
               fullWidth
-              sx={textFieldSx}
               inputProps={{ autoComplete: "off" }}
               InputProps={{
                 startAdornment: (
@@ -372,7 +361,6 @@ export default function FormFields({
               error={!!errors?.branchNumber}
               helperText={errors?.branchNumber}
               fullWidth
-              sx={textFieldSx}
               inputProps={{ autoComplete: "off" }}
               InputProps={{
                 startAdornment: (
@@ -393,7 +381,6 @@ export default function FormFields({
             error={!!errors?.accountNumber}
             helperText={errors?.accountNumber}
             fullWidth
-            sx={textFieldSx}
             inputProps={{ autoComplete: "off" }}
             InputProps={{
               startAdornment: (
@@ -413,7 +400,6 @@ export default function FormFields({
             error={!!errors?.accountHolder}
             helperText={errors?.accountHolder}
             fullWidth
-            sx={textFieldSx}
             inputProps={{ autoComplete: "off" }}
             InputProps={{
               startAdornment: (

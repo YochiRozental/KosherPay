@@ -12,10 +12,8 @@ import {
 
 import { useUserForm } from "../../hooks/useUserForm";
 import {
-  accentButtonSx,
   cardSx,
   colors,
-  ghostButtonSx,
   headerGradient,
   radius,
   shadows,
@@ -162,7 +160,9 @@ export default function UserForm({
                   <Button
                     type="submit"
                     disabled={loading}
-                    sx={{ ...accentButtonSx, minWidth: 160 }}
+                    variant="contained"
+                    size="large"
+                    sx={{ minWidth: 160 }}
                   >
                     {loading ? (
                       <CircularProgress size={20} color="inherit" />
@@ -171,7 +171,7 @@ export default function UserForm({
                     )}
                   </Button>
 
-                  <Button onClick={onCancel} sx={ghostButtonSx}>
+                  <Button onClick={onCancel} variant="text" size="large">
                     ביטול
                   </Button>
                 </Stack>

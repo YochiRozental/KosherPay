@@ -20,9 +20,7 @@ import { useUserForm } from "../../hooks/useUserForm";
 import {
   cardSx,
   colors,
-  outlinedButtonSx,
   pageBackground,
-  primaryButtonSx,
   radius,
   shadows,
 } from "../../theme/designTokens";
@@ -197,7 +195,13 @@ export default function AuthForm({
                 </Alert>
               )}
 
-              <Button type="submit" fullWidth disabled={loading} sx={primaryButtonSx}>
+              <Button
+                type="submit"
+                fullWidth
+                disabled={loading}
+                variant="contained"
+                size="large"
+              >
                 {loading ? (
                   <CircularProgress size={22} color="inherit" />
                 ) : isReg ? (
@@ -220,7 +224,7 @@ export default function AuthForm({
             </Typography>
           </Divider>
 
-          <Button fullWidth onClick={onSwitch} sx={outlinedButtonSx}>
+          <Button fullWidth onClick={onSwitch} variant="outlined" size="large">
             {isReg ? "מעבר להתחברות" : "מעבר להרשמה"}
           </Button>
         </Paper>
