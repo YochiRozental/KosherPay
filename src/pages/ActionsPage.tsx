@@ -1,8 +1,11 @@
 import { useState } from "react";
 
-import { Box, Typography, Alert, Snackbar } from "@mui/material";
+import { SettingsSuggest } from "@mui/icons-material";
+import { Box, Alert, Snackbar } from "@mui/material";
 
 import ActionsSection from "../components/dashboard/AccountTansactions";
+import PageHeader from "../components/layout/PageHeader";
+import { colors, radius } from "../theme/designTokens";
 
 import type { UserMe } from "../types";
 
@@ -47,41 +50,33 @@ export default function ActionsPage({ user }: { user: UserMe; onLogout: () => vo
     };
 
     return (
-        <Box sx={{ display: "flex", minHeight: "100vh", direction: "rtl" }}>
+        <Box sx={{ direction: "rtl", maxWidth: 1140, mx: "auto", py: { xs: 0.5, sm: 1 } }}>
+            <PageHeader
+                icon={<SettingsSuggest sx={{ color: colors.gold, fontSize: 26 }} />}
+                title="פעולות בחשבון"
+                subtitle="הפקדה, משיכה, העברה ובקשות תשלום — הכל במקום אחד מאובטח"
+            />
 
-            <Box
-                component="main"
-                sx={{
-                    flexGrow: 1,
-                    p: 3,
-                    boxSizing: "border-box",
-                }}
+            <ActionsSection
+                user={user}
+                onApiCall={handleApiCall}
+                isLoading={isLoading}
+            />
+
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={5000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             >
-                <Typography variant="h4" color="primary" sx={{ mb: 4 }}>
-                    פעולות בחשבון 🛠️
-                </Typography>
-
-                <ActionsSection
-                    user={user}
-                    onApiCall={handleApiCall}
-                    isLoading={isLoading}
-                />
-
-                <Snackbar
-                    open={snackbar.open}
-                    autoHideDuration={5000}
+                <Alert
                     onClose={handleCloseSnackbar}
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                    severity={snackbar.severity}
+                    sx={{ width: '100%', borderRadius: radius.button, fontWeight: 600 }}
                 >
-                    <Alert
-                        onClose={handleCloseSnackbar}
-                        severity={snackbar.severity}
-                        sx={{ width: '100%' }}
-                    >
-                        {snackbar.message}
-                    </Alert>
-                </Snackbar>
-            </Box>
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }

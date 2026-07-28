@@ -2,30 +2,90 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 
 import {
+    AccountBalanceOutlined,
+    PaymentsOutlined,
+    RequestQuoteOutlined,
+    SwapHorizRounded,
+} from "@mui/icons-material";
+import {
     Box,
     TextField,
     Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
     Stack,
-    Card,
-    CardContent,
+    Paper,
     Typography
 } from "@mui/material";
 
+import { colors, radius, shadows } from "../../theme/designTokens";
+
 import type { UserMe } from "../../types";
+
+const formatILS = (raw: string) => {
+    const n = +raw;
+    if (!Number.isFinite(n)) return raw;
+    return n.toLocaleString("he-IL", {
+        style: "currency",
+        currency: "ILS",
+        minimumFractionDigits: 2,
+    });
+};
 
 interface ActionCardProps {
     title: string;
+    caption: string;
+    icon: ReactNode;
+    iconBg: string;
     children: ReactNode;
 }
 
-function ActionCard({ title, children }: ActionCardProps) {
+function ActionCard({ title, caption, icon, iconBg, children }: ActionCardProps) {
     return (
-        <Card sx={{ flex: "1 1 600px", minWidth: "300px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxShadow: 3 }}>
-            <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
-                <Typography variant="h6" gutterBottom color="primary">{title}</Typography>
+        <Paper
+            elevation={0}
+            sx={{
+                p: 3,
+                display: "flex",
+                flexDirection: "column",
+                borderRadius: radius.card,
+                border: `1px solid ${colors.border}`,
+                boxShadow: shadows.sm,
+                bgcolor: colors.surface,
+                transition: "box-shadow 200ms ease, transform 200ms ease",
+                "&:hover": { boxShadow: shadows.md, transform: "translateY(-2px)" },
+            }}
+        >
+            <Stack direction="row" alignItems="center" sx={{ gap: 1.5, mb: 2.5 }}>
+                <Box
+                    sx={{
+                        width: 44,
+                        height: 44,
+                        flexShrink: 0,
+                        borderRadius: "12px",
+                        bgcolor: iconBg,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                >
+                    {icon}
+                </Box>
+                <Box>
+                    <Typography sx={{ fontSize: 16, fontWeight: 700, color: colors.textPrimary }}>
+                        {title}
+                    </Typography>
+                    <Typography sx={{ fontSize: 12.5, color: colors.textSecondary }}>
+                        {caption}
+                    </Typography>
+                </Box>
+            </Stack>
+            <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
                 {children}
-            </CardContent>
-        </Card>
+            </Box>
+        </Paper>
     );
 }
 
@@ -40,6 +100,7 @@ export default function ActionsSection({ onApiCall, isLoading }: ActionsSectionP
     const [withdrawAmount, setWithdrawAmount] = useState("");
     const [transferDetails, setTransferDetails] = useState({ recipient: "", amount: "" });
     const [paymentRequest, setPaymentRequest] = useState({ phone: "", amount: "" });
+    const [confirmAction, setConfirmAction] = useState<"withdraw" | "transfer" | null>(null);
 
     const handleApiCall = (action: 'deposit' | 'withdraw' | 'transfer' | 'request') => {
         let amount: number;
@@ -88,9 +149,21 @@ export default function ActionsSection({ onApiCall, isLoading }: ActionsSectionP
 
 
     return (
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, direction: "rtl" }}>
+        <Box
+            sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
+                gap: 3,
+                direction: "rtl",
+            }}
+        >
 
-            <ActionCard title="הפקדה">
+            <ActionCard
+                title="הפקדה"
+                caption="הוספת כספים ליתרה הזמינה בחשבון"
+                icon={<AccountBalanceOutlined sx={{ color: colors.primary, fontSize: 22 }} />}
+                iconBg={colors.accentSoft}
+            >
                 <Stack spacing={2}>
                     <TextField
                         type="number"
@@ -101,6 +174,7 @@ export default function ActionsSection({ onApiCall, isLoading }: ActionsSectionP
                     />
                     <Button
                         variant="contained"
+                        size="large"
                         onClick={() => handleApiCall('deposit')}
                         disabled={!depositAmount || +depositAmount <= 0 || isLoading}
                     >
@@ -109,7 +183,12 @@ export default function ActionsSection({ onApiCall, isLoading }: ActionsSectionP
                 </Stack>
             </ActionCard>
 
-            <ActionCard title="משיכה">
+            <ActionCard
+                title="משיכה"
+                caption="משיכת כספים מהיתרה הזמינה"
+                icon={<PaymentsOutlined sx={{ color: colors.dangerText, fontSize: 22 }} />}
+                iconBg="rgba(220, 38, 38, 0.10)"
+            >
                 <Stack spacing={2}>
                     <TextField
                         type="number"
@@ -121,7 +200,8 @@ export default function ActionsSection({ onApiCall, isLoading }: ActionsSectionP
                     <Button
                         variant="contained"
                         color="secondary"
-                        onClick={() => handleApiCall('withdraw')}
+                        size="large"
+                        onClick={() => setConfirmAction('withdraw')}
                         disabled={!withdrawAmount || +withdrawAmount <= 0 || isLoading}
                     >
                         משוך
@@ -129,7 +209,12 @@ export default function ActionsSection({ onApiCall, isLoading }: ActionsSectionP
                 </Stack>
             </ActionCard>
 
-            <ActionCard title="העברה">
+            <ActionCard
+                title="העברה"
+                caption="העברת כספים למשתמש אחר לפי מספר טלפון"
+                icon={<SwapHorizRounded sx={{ color: "#15803D", fontSize: 22 }} />}
+                iconBg="rgba(22, 163, 74, 0.12)"
+            >
                 <Stack spacing={2}>
                     <TextField
                         label="טלפון יעד"
@@ -146,15 +231,22 @@ export default function ActionsSection({ onApiCall, isLoading }: ActionsSectionP
                     <Button
                         variant="contained"
                         color="success"
-                        onClick={() => handleApiCall('transfer')}
+                        size="large"
+                        onClick={() => setConfirmAction('transfer')}
                         disabled={!transferDetails.recipient || !transferDetails.amount || +transferDetails.amount <= 0 || isLoading}
+                        sx={{ color: "#FFFFFF" }}
                     >
                         העבר
                     </Button>
                 </Stack>
             </ActionCard>
 
-            <ActionCard title="בקשת תשלום">
+            <ActionCard
+                title="בקשת תשלום"
+                caption="שליחת בקשת תשלום למשתמש אחר"
+                icon={<RequestQuoteOutlined sx={{ color: "#B45309", fontSize: 22 }} />}
+                iconBg="rgba(245, 158, 11, 0.12)"
+            >
                 <Stack spacing={2}>
                     <TextField
                         label="טלפון מבוקש"
@@ -171,13 +263,102 @@ export default function ActionsSection({ onApiCall, isLoading }: ActionsSectionP
                     <Button
                         variant="contained"
                         color="warning"
+                        size="large"
                         onClick={() => handleApiCall('request')}
                         disabled={!paymentRequest.phone || !paymentRequest.amount || +paymentRequest.amount <= 0 || isLoading}
+                        sx={{ color: "#FFFFFF" }}
                     >
                         בקש תשלום
                     </Button>
                 </Stack>
             </ActionCard>
+
+            <Dialog
+                open={confirmAction !== null}
+                onClose={() => setConfirmAction(null)}
+                maxWidth="xs"
+                fullWidth
+                dir="rtl"
+                aria-labelledby="confirm-action-title"
+            >
+                <DialogTitle
+                    id="confirm-action-title"
+                    sx={{ fontWeight: 700, color: colors.textPrimary, pb: 1 }}
+                >
+                    {confirmAction === 'withdraw' ? 'אישור משיכה' : 'אישור העברה'}
+                </DialogTitle>
+                <DialogContent>
+                    <Typography sx={{ fontSize: 14.5, color: colors.textSecondary, mb: 2 }}>
+                        {confirmAction === 'withdraw'
+                            ? 'אנא אשרו את פרטי המשיכה לפני הביצוע:'
+                            : 'אנא אשרו את פרטי ההעברה לפני הביצוע:'}
+                    </Typography>
+                    <Stack
+                        sx={{
+                            gap: 1,
+                            p: 2,
+                            borderRadius: radius.input,
+                            bgcolor: colors.accentSoft,
+                        }}
+                    >
+                        <Stack direction="row" justifyContent="space-between">
+                            <Typography sx={{ fontSize: 14, color: colors.textSecondary }}>
+                                סכום
+                            </Typography>
+                            <Typography
+                                sx={{
+                                    fontSize: 15,
+                                    fontWeight: 700,
+                                    color: colors.primary,
+                                    fontVariantNumeric: "tabular-nums",
+                                }}
+                            >
+                                {formatILS(
+                                    confirmAction === 'withdraw'
+                                        ? withdrawAmount
+                                        : transferDetails.amount
+                                )}
+                            </Typography>
+                        </Stack>
+                        {confirmAction === 'transfer' && (
+                            <Stack direction="row" justifyContent="space-between">
+                                <Typography sx={{ fontSize: 14, color: colors.textSecondary }}>
+                                    טלפון יעד
+                                </Typography>
+                                <Typography
+                                    sx={{
+                                        fontSize: 15,
+                                        fontWeight: 700,
+                                        color: colors.textPrimary,
+                                        direction: "ltr",
+                                        fontVariantNumeric: "tabular-nums",
+                                    }}
+                                >
+                                    {transferDetails.recipient}
+                                </Typography>
+                            </Stack>
+                        )}
+                    </Stack>
+                </DialogContent>
+                <DialogActions sx={{ p: 2.5, pt: 1.5, gap: 1 }}>
+                    <Button variant="outlined" onClick={() => setConfirmAction(null)}>
+                        ביטול
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color={confirmAction === 'withdraw' ? 'secondary' : 'success'}
+                        disabled={isLoading}
+                        onClick={() => {
+                            const action = confirmAction;
+                            setConfirmAction(null);
+                            if (action) handleApiCall(action);
+                        }}
+                        sx={confirmAction === 'transfer' ? { color: "#FFFFFF" } : undefined}
+                    >
+                        {confirmAction === 'withdraw' ? 'אישור משיכה' : 'אישור העברה'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }
