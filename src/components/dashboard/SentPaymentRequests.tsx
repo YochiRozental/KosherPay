@@ -19,6 +19,11 @@ export default function SentPaymentRequests({ user }: { user: UserMe }) {
   }, [dispatch, user]);
 
   return (
-    <PaymentRequestsTable requests={requests} loading={loading} error={error} />
+    <PaymentRequestsTable
+      requests={requests}
+      loading={loading}
+      error={error}
+      variant="sent"
+    />
   );
 }

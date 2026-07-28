@@ -33,6 +33,7 @@ export default function PaymentRequests({ user }: { user: UserMe }) {
       loading={loading}
       error={error}
       showActions
+      variant="incoming"
       onApprove={handleApprove}
       onReject={handleReject}
     />
