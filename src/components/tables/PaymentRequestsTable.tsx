@@ -14,6 +14,10 @@ import {
     Box,
     Button,
     ButtonBase,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
     Paper,
     Skeleton,
     Stack,
@@ -295,6 +299,7 @@ export default function PaymentRequestsTable({
     variant = "incoming",
 }: PaymentRequestsTableProps) {
     const [filter, setFilter] = useState<StatusFilter>("all");
+    const [confirmRequest, setConfirmRequest] = useState<RequestItem | null>(null);
 
     const sortedRequests = useMemo(() => {
         const parseTime = (v: unknown) => parseDate(v)?.getTime() ?? 0;
@@ -450,7 +455,7 @@ export default function PaymentRequestsTable({
                                         startIcon={<CheckRounded sx={{ fontSize: 18 }} />}
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            onApprove?.(row.id);
+                                            setConfirmRequest(row);
                                         }}
                                         sx={{ ...actionButtonSx, color: "#FFFFFF" }}
                                     >
@@ -607,6 +612,94 @@ export default function PaymentRequestsTable({
             ) : (
                 <DataTable<RequestItem> columns={columns} rows={filteredRequests} />
             )}
+
+            <Dialog
+                open={confirmRequest !== null}
+                onClose={() => setConfirmRequest(null)}
+                maxWidth="xs"
+                fullWidth
+                dir="rtl"
+                aria-labelledby="confirm-request-title"
+            >
+                <DialogTitle
+                    id="confirm-request-title"
+                    sx={{ fontWeight: 700, color: colors.textPrimary, pb: 1 }}
+                >
+                    אישור בקשת תשלום
+                </DialogTitle>
+                <DialogContent>
+                    <Typography sx={{ fontSize: 14.5, color: colors.textSecondary, mb: 2 }}>
+                        אנא אשרו את פרטי הבקשה לפני התשלום:
+                    </Typography>
+                    <Stack
+                        sx={{
+                            gap: 1,
+                            p: 2,
+                            borderRadius: radius.input,
+                            bgcolor: colors.accentSoft,
+                        }}
+                    >
+                        <Stack direction="row" justifyContent="space-between">
+                            <Typography sx={{ fontSize: 14, color: colors.textSecondary }}>
+                                סכום לתשלום
+                            </Typography>
+                            <Typography
+                                sx={{
+                                    fontSize: 15,
+                                    fontWeight: 700,
+                                    color: colors.primary,
+                                    fontVariantNumeric: "tabular-nums",
+                                }}
+                            >
+                                {formatILS(confirmRequest?.amount)}
+                            </Typography>
+                        </Stack>
+                        <Stack direction="row" justifyContent="space-between">
+                            <Typography sx={{ fontSize: 14, color: colors.textSecondary }}>
+                                מאת
+                            </Typography>
+                            <Typography
+                                sx={{ fontSize: 15, fontWeight: 700, color: colors.textPrimary }}
+                            >
+                                {confirmRequest?.name || "—"}
+                            </Typography>
+                        </Stack>
+                        <Stack direction="row" justifyContent="space-between">
+                            <Typography sx={{ fontSize: 14, color: colors.textSecondary }}>
+                                טלפון
+                            </Typography>
+                            <Typography
+                                sx={{
+                                    fontSize: 15,
+                                    fontWeight: 700,
+                                    color: colors.textPrimary,
+                                    direction: "ltr",
+                                    fontVariantNumeric: "tabular-nums",
+                                }}
+                            >
+                                {confirmRequest?.phone || "—"}
+                            </Typography>
+                        </Stack>
+                    </Stack>
+                </DialogContent>
+                <DialogActions sx={{ p: 2.5, pt: 1.5, gap: 1 }}>
+                    <Button variant="outlined" onClick={() => setConfirmRequest(null)}>
+                        ביטול
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="success"
+                        onClick={() => {
+                            const request = confirmRequest;
+                            setConfirmRequest(null);
+                            if (request) onApprove?.(request.id);
+                        }}
+                        sx={{ color: "#FFFFFF" }}
+                    >
+                        אישור ותשלום
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }
