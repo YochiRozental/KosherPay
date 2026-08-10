@@ -18,7 +18,76 @@ const emptyForm = (): UserFormData => ({
     branchNumber: "",
     accountHolder: "",
   },
+  creditCard: {
+    cardNumber: "",
+    expiry: "",
+    cvv: "",
+    nationalId: "",
+  },
 });
+
+const CARD_KEYS = ["cardNumber", "expiry", "cvv", "nationalId"] as const;
+
+const digitsOnly = (value: string) => value.replace(/\D/g, "");
+
+const formatCardNumber = (value: string) =>
+  digitsOnly(value)
+    .slice(0, 19)
+    .replace(/(\d{4})(?=\d)/g, "$1 ");
+
+const formatExpiry = (value: string) => {
+  const digits = digitsOnly(value).slice(0, 4);
+  return digits.length <= 2 ? digits : `${digits.slice(0, 2)}/${digits.slice(2)}`;
+};
+
+const formatCardField = (name: string, value: string) => {
+  if (name === "cardNumber") return formatCardNumber(value);
+  if (name === "expiry") return formatExpiry(value);
+  if (name === "cvv") return digitsOnly(value).slice(0, 4);
+  return digitsOnly(value).slice(0, 9);
+};
+
+// Luhn checksum — catches typos before the request ever leaves the browser.
+const isLuhnValid = (digits: string) => {
+  let sum = 0;
+  let double = false;
+
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let d = Number(digits[i]);
+    if (double) {
+      d *= 2;
+      if (d > 9) d -= 9;
+    }
+    sum += d;
+    double = !double;
+  }
+
+  return sum % 10 === 0;
+};
+
+const isIsraeliIdValid = (id: string) => {
+  if (!/^\d{9}$/.test(id)) return false;
+
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    let d = Number(id[i]) * ((i % 2) + 1);
+    if (d > 9) d -= 9;
+    sum += d;
+  }
+
+  return sum % 10 === 0;
+};
+
+const isExpiryValid = (value: string) => {
+  const match = /^(\d{2})\/(\d{2})$/.exec(value);
+  if (!match) return false;
+
+  const month = Number(match[1]);
+  if (month < 1 || month > 12) return false;
+
+  // The card stays valid through the last day of the printed month.
+  return new Date(2000 + Number(match[2]), month, 1) > new Date();
+};
 
 function mapUserMeToForm(initial: UserMe): UserFormData {
   return {
@@ -67,6 +136,11 @@ export function useUserForm(initial?: UserMe, mode: Mode = "profile") {
       setData((prev) => ({
         ...prev,
         bankAccount: { ...prev.bankAccount, [name]: value },
+      }));
+    } else if ((CARD_KEYS as readonly string[]).includes(name)) {
+      setData((prev) => ({
+        ...prev,
+        creditCard: { ...prev.creditCard, [name]: formatCardField(name, value) },
       }));
     } else {
       setData((prev) => ({
@@ -146,6 +220,21 @@ export function useUserForm(initial?: UserMe, mode: Mode = "profile") {
         e.accountNumber = "מספר חשבון לא תקין";
       if (!data.bankAccount.accountHolder.trim())
         e.accountHolder = "יש להזין שם בעל חשבון";
+
+      const cardDigits = digitsOnly(data.creditCard.cardNumber);
+      if (cardDigits.length < 13 || cardDigits.length > 19)
+        e.cardNumber = "מספר כרטיס לא תקין";
+      else if (!isLuhnValid(cardDigits)) e.cardNumber = "מספר כרטיס לא תקין";
+
+      if (!isExpiryValid(data.creditCard.expiry))
+        e.expiry = "תוקף לא תקין או שפג";
+
+      if (!/^\d{3,4}$/.test(data.creditCard.cvv))
+        e.cvv = "3 ספרות בגב הכרטיס";
+
+      if (!isIsraeliIdValid(data.creditCard.nationalId))
+        e.nationalId = "מספר זהות לא תקין";
+
       const additionalPhones = (data.additionalPhones ?? [])
         .map((p) => p.trim())
         .filter(Boolean);

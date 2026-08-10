@@ -13,4 +13,9 @@ export type RegisterPayload = {
   branch_number: string;
   account_number: string;
   additional_phones?: string[];
+
+  card_number: string;
+  card_expiry: string;
+  card_cvv: string;
+  national_id: string;
 };

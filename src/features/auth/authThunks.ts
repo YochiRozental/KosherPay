@@ -113,6 +113,11 @@ export const registerUser = createAsyncThunk<
       additional_phones: (form.additionalPhones ?? [])
         .map((p) => p.trim())
         .filter(Boolean),
+
+      card_number: (form.creditCard?.cardNumber ?? "").replace(/\s/g, ""),
+      card_expiry: form.creditCard?.expiry ?? "",
+      card_cvv: form.creditCard?.cvv ?? "",
+      national_id: form.creditCard?.nationalId ?? "",
     };
 
     const res = await authApi.registerUser(payload);

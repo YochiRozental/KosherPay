@@ -150,6 +150,7 @@ export default function AuthForm({
                 errors={errors}
                 onChange={onChange}
                 showBankFields={isReg}
+                showCreditCardFields={isReg}
                 showForgotSecret={!isReg}
                 onForgotSecretClick={() => navigate("/forgot-secret")}
                 onAddAdditionalPhone={addAdditionalPhone}

@@ -1,9 +1,17 @@
 import type { ApiResponse } from "./api";
 import type { Role } from "./auth";
 
+export interface CreditCardDetails {
+  cardNumber: string;
+  expiry: string;
+  cvv: string;
+  nationalId: string;
+}
+
 export interface UserFormData extends UserMe {
   secret?: string;
   additionalPhones: string[];
+  creditCard: CreditCardDetails;
 }
 
 export interface UpdateMePayload {

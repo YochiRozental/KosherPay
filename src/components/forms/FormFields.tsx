@@ -1,8 +1,10 @@
 import { useState } from "react";
 
 import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlined";
+import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
+import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
@@ -37,6 +39,7 @@ interface Props {
 
   readOnly?: boolean;
   showBankFields?: boolean;
+  showCreditCardFields?: boolean;
   compact?: boolean;
 }
 
@@ -104,6 +107,7 @@ export default function FormFields({
 
   readOnly = false,
   showBankFields = false,
+  showCreditCardFields = false,
   showForgotSecret = false,
   compact = false,
 }: Props) {
@@ -114,6 +118,13 @@ export default function FormFields({
     branchNumber: "",
     accountNumber: "",
     accountHolder: "",
+  };
+
+  const card = data?.creditCard ?? {
+    cardNumber: "",
+    expiry: "",
+    cvv: "",
+    nationalId: "",
   };
 
   const baseProps = (
@@ -385,7 +396,7 @@ export default function FormFields({
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <CreditCardOutlinedIcon sx={fieldIconSx} />
+                  <AccountBalanceWalletOutlinedIcon sx={fieldIconSx} />
                 </InputAdornment>
               ),
               readOnly,
@@ -401,6 +412,106 @@ export default function FormFields({
             helperText={errors?.accountHolder}
             fullWidth
             inputProps={{ autoComplete: "off" }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <BadgeOutlinedIcon sx={fieldIconSx} />
+                </InputAdornment>
+              ),
+              readOnly,
+            }}
+          />
+        </>
+      )}
+      {showCreditCardFields && (
+        <>
+          <SectionHeader
+            icon={<CreditCardOutlinedIcon fontSize="small" />}
+            title="פרטי כרטיס אשראי"
+            caption="הכרטיס משמש לאימות הזהות ולחיוב בעת פתיחת החשבון"
+          />
+
+          <TextField
+            label="מספר כרטיס"
+            name="cardNumber"
+            value={card.cardNumber}
+            onChange={onChange}
+            disabled={readOnly}
+            error={!!errors?.cardNumber}
+            helperText={errors?.cardNumber}
+            fullWidth
+            placeholder="0000 0000 0000 0000"
+            inputProps={{ autoComplete: "cc-number", inputMode: "numeric" }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <CreditCardOutlinedIcon sx={fieldIconSx} />
+                </InputAdornment>
+              ),
+              readOnly,
+            }}
+          />
+
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            spacing={1}
+            gap={1}
+            width="100%"
+          >
+            <TextField
+              label="תוקף"
+              name="expiry"
+              value={card.expiry}
+              onChange={onChange}
+              disabled={readOnly}
+              error={!!errors?.expiry}
+              helperText={errors?.expiry || "חודש/שנה"}
+              fullWidth
+              placeholder="MM/YY"
+              inputProps={{ autoComplete: "cc-exp", inputMode: "numeric" }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <CalendarMonthOutlinedIcon sx={fieldIconSx} />
+                  </InputAdornment>
+                ),
+                readOnly,
+              }}
+            />
+            <TextField
+              label="3 ספרות בגב הכרטיס"
+              name="cvv"
+              value={card.cvv}
+              onChange={onChange}
+              disabled={readOnly}
+              error={!!errors?.cvv}
+              helperText={errors?.cvv}
+              fullWidth
+              placeholder="123"
+              inputProps={{ autoComplete: "off", inputMode: "numeric" }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockOutlinedIcon sx={fieldIconSx} />
+                  </InputAdornment>
+                ),
+                readOnly,
+              }}
+            />
+          </Stack>
+
+          <TextField
+            label="מספר זהות"
+            name="nationalId"
+            value={card.nationalId}
+            onChange={onChange}
+            disabled={readOnly}
+            error={!!errors?.nationalId}
+            helperText={errors?.nationalId || "9 ספרות, כולל ספרת ביקורת"}
+            fullWidth
+            placeholder="000000000"
+            inputProps={{ autoComplete: "off", inputMode: "numeric" }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
